@@ -35,45 +35,30 @@
 </head>
 <body>
 <script>
-var whitelistUrl = "http://nihao.xnkeji.qzz.io"; 
-
-function checkUrlWithWhitelist(encodedParam) {
-  fetch(whitelistUrl)
-    .then(response => response.ok ? response.text() : Promise.reject())
-    .then(text => {
-      var whitelist = text.split('\n').map(d => d.trim()).filter(d => d && !d.startsWith('#'));
-      
-      if (encodedParam) {
-        try {
-          var url = new URL(atob(encodedParam));
-          var allowed = whitelist.some(d => url.hostname === d || url.hostname.endsWith('.' + d));
-          
-          if (allowed) {
-            document.body.innerHTML = `<iframe class="content" src="${url.href}"></iframe>`;
-          } else {
-            showWarning(`@xyt223`);
-          }
-        } catch(e) {
-          showWarning("危险链接！URL格式无效");
-        }
-      } else {
-        showWarning("未提供有效参数");
-      }
-    })
-    .catch(() => showWarning("白名单验证失败"));
-}
-
 function showWarning(msg) {
-  document.body.innerHTML = `
+  document.body.innerHTML = 
     <div class="fraud-warning">
       <div style="font-size:4rem;">⭕️</div>
       <h1>${msg}</h1>
     </div>
-  `;
+  ;
+}
+
+function displayIframe(encodedParam) {
+  if (encodedParam) {
+    try {
+      var url = new URL(atob(encodedParam));
+      document.body.innerHTML = <iframe class="content" src="${url.href}"></iframe>;
+    } catch (e) {
+      showWarning("危险链接！URL格式无效");
+    }
+  } else {
+    showWarning("未提供有效参数");
+  }
 }
 
 var param = new URLSearchParams(window.location.search).get('c');
-checkUrlWithWhitelist(param);
+displayIframe(param);
 </script>
 </body>
 </html>
