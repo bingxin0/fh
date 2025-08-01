@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+  <title>闲鱼</title>
+  <style>
+    .content {
+      height: 100vh;
+      width: 100vw;
+      position: fixed;
+      left: 0;
+      top: 0;
+      border: none;
+    }
+    .fraud-warning {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      padding: 30px;
+      background: linear-gradient(135deg, #ff3b3b, #ff6b6b);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(255, 59, 59, 0.3);
+      color: white;
+      max-width: 80%;
+      animation: pulse 1.5s infinite alternate;
+    }
+    @keyframes pulse {
+      from { transform: translate(-50%, -50%) scale(1); }
+      to { transform: translate(-50%, -50%) scale(1.05); }
+    }
+  </style>
+</head>
+<body>
+<script>
+var whitelistUrl = "http://域名/lz.txt"; 
+
+function checkUrlWithWhitelist(encodedParam) {
+  fetch(whitelistUrl)
+    .then(response => response.ok ? response.text() : Promise.reject())
+    .then(text => {
+      var whitelist = text.split('\n').map(d => d.trim()).filter(d => d && !d.startsWith('#'));
+      
+      if (encodedParam) {
+        try {
+          var url = new URL(atob(encodedParam));
+          var allowed = whitelist.some(d => url.hostname === d || url.hostname.endsWith('.' + d));
+          
+          if (allowed) {
+            document.body.innerHTML = `<iframe class="content" src="${url.href}"></iframe>`;
+          } else {
+            showWarning(`@xyt223`);
+          }
+        } catch(e) {
+          showWarning("危险链接！URL格式无效");
+        }
+      } else {
+        showWarning("未提供有效参数");
+      }
+    })
+    .catch(() => showWarning("白名单验证失败"));
+}
+
+function showWarning(msg) {
+  document.body.innerHTML = `
+    <div class="fraud-warning">
+      <div style="font-size:4rem;">⭕️</div>
+      <h1>${msg}</h1>
+    </div>
+  `;
+}
+
+var param = new URLSearchParams(window.location.search).get('c');
+checkUrlWithWhitelist(param);
+</script>
+</body>
+</html>
